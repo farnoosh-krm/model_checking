@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+
+const int N=5;
+typedef int[0,N-1] act_id;
+
+typedef int[0,N-1] synchro_id;
+typedef int[0,N-1] solo_id;
+
+typedef int[0,N-1] a_id;
+typedef int[0,N-1] i_id;
+typedef int[0,N-1] v_id;
+
+
+int EARLY=5;
+int LATE=20;
+int id;
+
+chan acting[id], attack, finished[id];
+
+clock day;
+
+
+
+
+</declaration>
+	<template>
+		<name x="5" y="5">victim</name>
+		<declaration>// Place local declarations here.
+
+clock day;
+int s=0;
+int a=0;
+
+bool vulnerable;
+bool resource_enable;
+bool involved=false;
+bool going_out=false;
+
+///////////////////////////////////////////////
+void set_vulnerable(){
+    vulnerable=true;
+}
+void reset_vulnerable(){
+    vulnerable=false;
+}
+
+// karbar dareh az manba estefade mikoneh
+
+void isReady(int input){
+    input=1;
+}
+void doAction(int attacked){
+    attacked=1;
+}
+void isOut(){
+    going_out=true;
+}
+</declaration>
+		<location id="id0" x="-297" y="-34">
+			<name x="-340" y="-59">Safe</name>
+		</location>
+		<location id="id1" x="34" y="-25">
+			<name x="-51" y="-42">Vulnerable</name>
+		</location>
+		<location id="id2" x="110" y="-170">
+			<name x="100" y="-204">trouble</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id1"/>
+			<label kind="select" x="119" y="17">a:act_id</label>
+			<label kind="guard" x="102" y="34">isReady(a) &amp;&amp; involved==false &amp;&amp; day&lt;=LATE &amp;&amp; day&gt;=EARLY</label>
+			<label kind="synchronisation" x="119" y="51">acting[id]!</label>
+			<label kind="assignment" x="119" y="68">doAction(a)</label>
+			<nail x="110" y="76"/>
+			<nail x="51" y="102"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id1"/>
+			<label kind="select" x="144" y="-127">s:synchro_id</label>
+			<label kind="synchronisation" x="136" y="-110">finished[id]?</label>
+			<label kind="assignment" x="119" y="-93">involved==false</label>
+			<nail x="144" y="-119"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="8" y="-136">involved==true</label>
+			<label kind="synchronisation" x="25" y="-170">attack?</label>
+			<nail x="25" y="-144"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-221" y="42">involved==false &amp;&amp; isOut()</label>
+			<label kind="assignment" x="-220" y="68">reset_vulnerable()</label>
+			<nail x="-25" y="68"/>
+			<nail x="-238" y="68"/>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-237" y="-161">involved==false &amp;&amp; day&gt;=EARLY</label>
+			<label kind="synchronisation" x="-237" y="-144">acting[id]!</label>
+			<label kind="assignment" x="-237" y="-127">set_vulnerable()</label>
+			<nail x="-255" y="-127"/>
+			<nail x="-34" y="-127"/>
+		</transition>
+	</template>
+	<template>
+		<name>attacker</name>
+		<declaration>
+
+int id;
+int chosen;
+int s=0;
+int v=0;
+int skills=0;
+
+void skillRate(){
+    skills++;
+}
+chan finished[id], new_step[id], choose[s], acting[v];
+</declaration>
+		<location id="id3" x="-382" y="-8">
+			<name x="-416" y="-25">idle</name>
+			<label kind="invariant" x="-476" y="-17">skills==0</label>
+		</location>
+		<location id="id4" x="51" y="-8">
+			<name x="17" y="-42">thinking</name>
+			<label kind="invariant" x="-17" y="0">skills==0</label>
+		</location>
+		<location id="id5" x="340" y="-8">
+			<name x="357" y="-17">renew_step</name>
+			<label kind="invariant" x="357" y="0">skills==0</label>
+			<committed/>
+		</location>
+		<location id="id6" x="51" y="-178">
+			<name x="8" y="-212">synchro_chosen</name>
+			<label kind="invariant" x="34" y="-229">skills==0</label>
+			<committed/>
+		</location>
+		<location id="id7" x="-382" y="-178">
+			<name x="-408" y="-212">in_contact</name>
+			<label kind="invariant" x="-459" y="-229">skills==updt[chosen].skillRate</label>
+		</location>
+		<location id="id8" x="51" y="153">
+			<name x="17" y="161">solo_chosen</name>
+			<label kind="invariant" x="-8" y="178">skills==updt[chosen].skillRate</label>
+		</location>
+		<init ref="id3"/>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id3"/>
+			<label kind="select" x="-306" y="110">s:solo_id</label>
+			<label kind="synchronisation" x="-306" y="127">finished[s]?</label>
+			<label kind="assignment" x="-306" y="153">chosen=0</label>
+			<nail x="-382" y="153"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id4"/>
+			<label kind="select" x="161" y="34">v:v_id</label>
+			<label kind="synchronisation" x="153" y="59">acting[v]?</label>
+			<nail x="254" y="59"/>
+			<nail x="118" y="59"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="136" y="-85">new_step[id]!</label>
+			<nail x="110" y="-68"/>
+			<nail x="263" y="-68"/>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id3"/>
+			<label kind="select" x="-382" y="-144">s:synchro_id</label>
+			<label kind="synchronisation" x="-382" y="-110">finished[s]?</label>
+			<label kind="assignment" x="-382" y="-93">chosen=0</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-195" y="-204">attack!</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id6"/>
+			<label kind="select" x="-34" y="-144">s:synchro_id</label>
+			<label kind="synchronisation" x="-25" y="-127">choose[s]?</label>
+			<label kind="assignment" x="-17" y="-110">chosen=0</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id8"/>
+			<label kind="select" x="-8" y="51">s:solo_id</label>
+			<label kind="synchronisation" x="-17" y="76">choose[s]?</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-229" y="-34">new_step[id]!</label>
+		</transition>
+	</template>
+	<template>
+		<name>step</name>
+		<declaration>
+int a=0;
+int i=0;
+int v=0;
+
+clock x;
+
+int min, max, final;
+
+bool successful;
+bool fail;
+bool attack;
+
+const int N=5;
+typedef int[0,N-1] a_id;
+typedef int[0,N-1] i_id;
+typedef int[0,N-1] v_id;
+
+chan choose[i] ,new_step[a], finished[id];
+
+///////////////////////////////////////
+
+void attacker(){
+    for(int m=1;m&lt;=10;m++){
+        m=i;
+        isReady();
+    }
+}
+
+void isReady(){
+    attack=true;
+}
+
+void succeed(){
+    successful=true;
+}
+
+void BCET(){
+    min=50;
+}
+
+void WCET(){
+    max=500;
+}
+
+void deadline(){
+    if(max&gt;500){
+       x=0; 
+    }
+}
+
+void failed(){
+    fail=true;
+}
+
+void usefull(){
+    fail=false;
+}
+</declaration>
+		<location id="id9" x="-314" y="-187">
+			<name x="-467" y="-204">waiting_dependecies</name>
+		</location>
+		<location id="id10" x="-8" y="-187">
+			<name x="17" y="-195">waiting_choice</name>
+		</location>
+		<location id="id11" x="-8" y="8">
+			<name x="8" y="-8">ready</name>
+			<label kind="invariant" x="8" y="8">x&lt;=WCET()</label>
+		</location>
+		<location id="id12" x="-8" y="93">
+			<name x="8" y="76">attack</name>
+			<committed/>
+		</location>
+		<location id="id13" x="-186" y="8">
+			<name x="-196" y="-26">error</name>
+		</location>
+		<location id="id14" x="-186" y="178">
+			<name x="-204" y="187">done</name>
+		</location>
+		<init ref="id9"/>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id9"/>
+			<label kind="assignment" x="-187" y="68">failed()</label>
+			<nail x="-314" y="93"/>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id9"/>
+			<label kind="select" x="-314" y="136">s:s_id</label>
+			<label kind="guard" x="-510" y="178">(renewable || id==13 || id==14) &amp;&amp; usefull()</label>
+			<label kind="synchronisation" x="-314" y="153">finished[s]?</label>
+			<nail x="-314" y="178"/>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id14"/>
+			<label kind="synchronisation" x="-127" y="153">finished[id]!</label>
+			<label kind="assignment" x="-102" y="178">succeed()</label>
+			<nail x="-8" y="178"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id12"/>
+			<label kind="guard" x="0" y="34">x&gt;=BCET()</label>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id13"/>
+			<label kind="guard" x="-136" y="-17">x&gt;deadline()</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="8" y="-110">choose[id]!</label>
+			<label kind="assignment" x="17" y="-93">x=0</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id9"/>
+			<label kind="select" x="-246" y="-85">v : v_id</label>
+			<label kind="synchronisation" x="-246" y="-68">acting[v]?</label>
+			<nail x="-8" y="-68"/>
+			<nail x="-314" y="-68"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id9"/>
+			<label kind="select" x="-246" y="-144">i : s_id</label>
+			<label kind="synchronisation" x="-246" y="-127">choose[i]?</label>
+			<nail x="-8" y="-127"/>
+			<nail x="-314" y="-127"/>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="select" x="-246" y="-229">a:a_id</label>
+			<label kind="guard" x="-246" y="-212">a==attacker() &amp;&amp; isReady()</label>
+			<label kind="synchronisation" x="-246" y="-187">new_step[a]?</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+victim1=victim();
+attacker1=attacker();
+
+
+// List one or more processes to be composed into a system.
+system victim1, attacker1, step;
+    </system>
+	<queries>
+		<query>
+			<formula></formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>

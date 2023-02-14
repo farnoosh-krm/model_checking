@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+chan send_request, send_message, out;
+
+clock x;</declaration>
+	<template>
+		<name x="5" y="5">dDos</name>
+		<declaration>// Place local declarations here.
+int sr=0;</declaration>
+		<location id="id0" x="-1121" y="-348">
+			<name x="-1147" y="-390">attacker</name>
+		</location>
+		<location id="id1" x="-1121" y="-186">
+			<name x="-1130" y="-178">bot</name>
+		</location>
+		<location id="id2" x="-816" y="-178">
+			<name x="-841" y="-161">HTTP_get</name>
+		</location>
+		<location id="id3" x="-467" y="-186">
+			<name x="-484" y="-178">target</name>
+		</location>
+		<location id="id4" x="-799" y="-34">
+			<name x="-824" y="-17">time_out</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-858" y="-322">send_message?</label>
+			<nail x="-476" y="-297"/>
+			<nail x="-960" y="-297"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="guard" x="-671" y="-127">sr&gt;10</label>
+			<label kind="synchronisation" x="-663" y="-102">out?</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id4"/>
+			<label kind="guard" x="-1002" y="-119">x&gt;10</label>
+			<label kind="synchronisation" x="-994" y="-102">out?</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="-697" y="-203">send_request?</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-1011" y="-203">x&lt;=10</label>
+			<label kind="synchronisation" x="-1028" y="-178">send_request?</label>
+			<label kind="assignment" x="-943" y="-203">sr++</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-1164" y="-271">x==0</label>
+			<label kind="synchronisation" x="-1223" y="-297">send_request?</label>
+		</transition>
+	</template>
+	<template>
+		<name>attacker</name>
+		<location id="id5" x="-952" y="-297">
+			<name x="-977" y="-280">attacker</name>
+		</location>
+		<init ref="id5"/>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-901" y="-441">send_request!</label>
+			<nail x="-936" y="-421"/>
+			<nail x="-775" y="-412"/>
+		</transition>
+	</template>
+	<template>
+		<name>bot</name>
+		<location id="id6" x="-671" y="-272">
+		</location>
+		<init ref="id6"/>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-603" y="-204">out!</label>
+			<nail x="-561" y="-238"/>
+			<nail x="-645" y="-170"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-670" y="-408">send_request!</label>
+			<nail x="-688" y="-391"/>
+			<nail x="-586" y="-391"/>
+		</transition>
+	</template>
+	<template>
+		<name>target</name>
+		<location id="id7" x="-595" y="-195">
+			<name x="-654" y="-212">target</name>
+		</location>
+		<init ref="id7"/>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-603" y="-68">out!</label>
+			<nail x="-536" y="-68"/>
+			<nail x="-646" y="-68"/>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-595" y="-339">send_message!</label>
+			<nail x="-612" y="-322"/>
+			<nail x="-502" y="-305"/>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+attacker1=attacker();
+bot1=bot();
+bot2=bot();
+bot3=bot();
+target1=target();
+// List one or more processes to be composed into a system.
+system attacker1, bot1, bot2, bot3, target1, dDos;
+    </system>
+	<queries>
+		<query>
+			<formula>A[] dDos.sr&gt;10</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; dDos.sr&gt;10</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E[] (dDos.target imply dDos.time_out)</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E[] (dDos.bot imply dDos.time_out)</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; dDos.time_out == true</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; deadlock</formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>

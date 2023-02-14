@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+chan send_message, change_message, delay, send_request, out;
+clock x;
+</declaration>
+	<template>
+		<name>user</name>
+		<location id="id0" x="-2040" y="-595">
+			<name x="-2091" y="-612">user</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-2048" y="-485">send_request!</label>
+			<nail x="-1930" y="-502"/>
+			<nail x="-2065" y="-485"/>
+		</transition>
+	</template>
+	<template>
+		<name x="5" y="5">MITM</name>
+		<declaration>// Place local declarations here.
+int rc=0;</declaration>
+		<location id="id1" x="-18" y="8">
+			<name x="-28" y="-26">user</name>
+		</location>
+		<location id="id2" x="442" y="0">
+			<name x="458" y="-9">web_application</name>
+		</location>
+		<location id="id3" x="467" y="153">
+			<name x="442" y="170">time_out</name>
+		</location>
+		<location id="id4" x="195" y="153">
+			<name x="169" y="170">attacker</name>
+		</location>
+		<init ref="id1"/>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="guard" x="458" y="68">rc&gt;1</label>
+			<label kind="synchronisation" x="458" y="85">out?</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id3"/>
+			<label kind="guard" x="331" y="136">x&gt;=5</label>
+			<label kind="synchronisation" x="331" y="153">delay?</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id1"/>
+			<label kind="guard" x="178" y="-119">rc==1</label>
+			<label kind="synchronisation" x="144" y="-102">send_message?</label>
+			<label kind="assignment" x="169" y="-85">rc=0</label>
+			<nail x="390" y="-85"/>
+			<nail x="50" y="-85"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="178" y="-17">x&lt;=2</label>
+			<label kind="synchronisation" x="59" y="-17">send_request?</label>
+			<label kind="assignment" x="178" y="8">rc++</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="263" y="59">change_message?</label>
+			<label kind="assignment" x="297" y="76">rc++</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id4"/>
+			<label kind="guard" x="50" y="68">x&gt;2</label>
+			<label kind="synchronisation" x="33" y="51">delay?</label>
+			<label kind="assignment" x="59" y="85">rc++</label>
+		</transition>
+	</template>
+	<template>
+		<name>web</name>
+		<location id="id5" x="-603" y="-238">
+		</location>
+		<init ref="id5"/>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-603" y="-162">out!</label>
+			<nail x="-552" y="-170"/>
+			<nail x="-620" y="-162"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-603" y="-340">send_message!</label>
+			<nail x="-603" y="-314"/>
+			<nail x="-552" y="-314"/>
+		</transition>
+	</template>
+	<template>
+		<name>attacker</name>
+		<location id="id6" x="-714" y="-595">
+			<name x="-724" y="-629">attacker</name>
+		</location>
+		<init ref="id6"/>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-756" y="-519">change_message!</label>
+			<nail x="-663" y="-527"/>
+			<nail x="-739" y="-527"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-714" y="-697">delay!</label>
+			<nail x="-731" y="-672"/>
+			<nail x="-654" y="-672"/>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+user1=user();
+attacker1=attacker();
+web1=web();
+
+
+// List one or more processes to be composed into a system.
+
+system user1, attacker1, web1, MITM;
+    </system>
+	<queries>
+		<query>
+			<formula>A[] MITM.rc&gt;=0</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; MITM.attacker == true</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>A[] MITM.attacker == true</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E[] (MITM.attacker imply MITM.web_application)</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; not deadlock</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula></formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>
